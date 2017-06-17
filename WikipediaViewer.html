@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Arvo|Days+One|Gloria+Hallelujah|Orbitron|Play" rel="stylesheet">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <script src="https://cdn.rawgit.com/monkeecreate/jquery.simpleWeather/master/jquery.simpleWeather.min.js"></script>
+    <title>Random Quote Machine</title>
+    <style>
+        body{
+            background-color: black;
+            color: white;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            width : 50%;
+        }
+
+        #temp{
+            font-size: x-large;
+            font-weight: bold;
+            color: white;
+        }
+
+        #search-group{
+            border: 2px solid blue;
+            border-radius: 25px;
+            background-color: transparent;
+            color: white;
+        }
+        #search-group button{
+            border:0;
+            background:transparent;
+        }
+        .input-group .input-group-addon{
+            background: transparent !important;
+        }
+        .input-group .form-control{
+            background: transparent !important;
+            color: white;
+        }
+        .fa{
+            color: white;
+        }
+        #random-wiki{
+            background-color: blue;
+            color: white;
+            border-radius: 25px;
+        }
+    </style>
+    <script>
+        // Docs at http://simpleweatherjs.com
+
+        $(document).ready(function(){
+
+            $('#random-wiki').on('click', function(event){
+                console.log('clciked');
+                event.preventDefault();
+                $.ajax({
+                    type: "GET",
+                    url: "https://simple.wikipedia.org/w/api.php?action=query&generator=random&grnnamespace=0&prop=extracts&exsentences=10&format=json&callback=?",
+                    contentType: "application/json; charset=utf-8",
+                    async: false,
+                    dataType: "json",
+                    success: function (data) {
+                        var pages = data.query.pages;
+                        var text = pages[ Object.keys(pages)[0] ].extract;
+                        document.getElementById('temp').innerHTML = text;
+                    },
+                    error: function (errorMessage) {
+                    }
+                });
+
+            });
+            $('#search-wiki').on('click', function(event){
+                console.log('clciked');
+                event.preventDefault();
+                $.ajax({
+                    url: "https://en.wikipedia.org/w/api.php",
+                    data: {
+                        format: "json",
+                        action: "parse",
+                        page: $('#search-input').val(),
+                        prop:"text",
+                        section:0
+                    },
+                    dataType: 'jsonp',
+                    headers: {
+                        'Api-User-Agent': 'MyCoolTool/1.1 (http://example.com/MyCoolTool/; MyCoolTool@example.com) BasedOnSuperLib/1.4'
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        //      $("#article").html(data.parse.text["*"])
+
+                        var markup = data.parse.text["*"];
+                        var i = $('<div></div>').html(markup);
+
+                        // remove links as they will not work
+                        i.find('a').each(function() { $(this).replaceWith($(this).html()); });
+
+                        // remove any references
+                        i.find('sup').remove();
+
+                        // remove cite error
+                        i.find('.mw-ext-cite-error').remove();
+
+                        $('#temp').html($(i).find('p'));
+
+
+                    }
+                });
+
+            });
+
+        });
+
+
+
+
+
+
+
+
+
+    </script>
+</head>
+<body>
+<div class="container-fluid ">
+
+    <div class="row justify-content-md-center">
+        <div class="col-md-6  ">
+            <div class="input-group " id="search-group">
+                <input id="search-input" type="text" class="form-control"  placeholder="Enter Wiki To search For" >
+                <span class="input-group-addon">
+                    <button id="search-wiki">
+                        <span class="fa fa-search"></span>
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <div class="row justify-content-md-center">
+        <button id="random-wiki" class="btn  col align-self-center mt-5" >Random Wiki</button>
+    </div>
+    <div class = "row justify-content-md-center">
+        <div class = "col-xs-12 well" id="temp"></div>
+    </div>
+
+</div>
+
+</body>
+</html>
